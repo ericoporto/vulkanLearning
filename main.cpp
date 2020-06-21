@@ -14,6 +14,7 @@ private:
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; //holds our graphics card
+    VkDevice device; // logical device we will use to interface with the physical device
 public:
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
@@ -280,6 +281,48 @@ private:
         return indices;
     }
 
+    void createLogicalDevice() {
+        //Specifying the queues to be created
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        queueCreateInfo.queueCount = 1;
+
+        float queuePriority = 1.0f; // required even if only one queue
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+
+        // specifying device features we will use
+        VkPhysicalDeviceFeatures deviceFeatures{};
+
+        // Creating the logical device
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.queueCreateInfoCount = 1;
+
+        createInfo.pEnabledFeatures = &deviceFeatures;
+
+        createInfo.enabledExtensionCount = 0;
+
+        // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#devsandqueues-device-creation
+        // enabledLayerCount is deprecated and ignored.
+        // ppEnabledLayerNames is deprecated and ignored.
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size()); // ignored in newer Vulkan implementations
+            createInfo.ppEnabledLayerNames = validationLayers.data(); // ignored in newer Vulkan implementations
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        // instantiate the logical device
+        if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create logical device!");
+        }
+
+    }
+
 // main functions at top level
     void initWindow() {
         glfwInit();
@@ -294,6 +337,7 @@ private:
         createInstance();
         setupDebugMessenger();
         pickPhysicalDevice();
+        createLogicalDevice();
     }
 
     void mainLoop() {
@@ -303,6 +347,7 @@ private:
     }
 
     void cleanup() {
+        vkDestroyDevice(device, nullptr); // destroys logical device
         if (enableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
