@@ -11,3 +11,7 @@ This repository is set up for CLion 2020.1.2 on Ubuntu 20.04
 variable there. 
 - If you are on on the same SDK I am using that environment variable may be already correctly configured, it should 
 point the `x86_64` dir inside the SDK.
+
+On Ubuntu 20.04 Focal Fossa, could only make the validation layers work after installing at system level with:
+
+    sudo apt install vulkan-validationlayers-dev
