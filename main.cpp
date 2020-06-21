@@ -1,6 +1,6 @@
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
-
+#include <optional> // this could be hell in MacOS, probably better to switch to optional-lite
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
@@ -139,31 +139,11 @@ private:
         return extensions;
     }
 
-    // rates a device suitability
-    int rateDeviceSuitability(VkPhysicalDevice device) {
-        //Basic device properties like the name, type and supported Vulkan version
-        VkPhysicalDeviceProperties deviceProperties;
-        vkGetPhysicalDeviceProperties(device, &deviceProperties);
-        //information on support for optional features
-        VkPhysicalDeviceFeatures deviceFeatures;
-        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+    // checks if a device is suitable for us in vulkan support
+    bool isDeviceSuitable(VkPhysicalDevice device) {
+        QueueFamilyIndices indices = findQueueFamilies(device);
 
-        int score = 0;
-
-        // Discrete GPUs have a significant performance advantage
-        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-            score += 1000;
-        }
-
-        // Maximum possible size of textures affects graphics quality
-        score += deviceProperties.limits.maxImageDimension2D;
-
-        // Application can't function without geometry shaders
-        if (!deviceFeatures.geometryShader) {
-            return 0;
-        }
-
-        return score;
+        return indices.isComplete();
     }
 
     // methods used to Initialize Vulkan in initVulkan()
@@ -244,21 +224,60 @@ private:
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-        // Use an ordered map to automatically sort candidates by increasing score
-        // we are using <score, device> pairs
-        std::multimap<int, VkPhysicalDevice> candidates;
-
+        // we are picking the first suitable device found
         for (const auto& device : devices) {
-            int score = rateDeviceSuitability(device);
-            candidates.insert(std::make_pair(score, device));
+            if(isDeviceSuitable(device)) {
+                physicalDevice = device;
+                break;
+            }
         }
 
-        // Check if the best candidate is suitable at all
-        if (candidates.rbegin()->first > 0) {
-            physicalDevice = candidates.rbegin()->second;
-        } else {
+        if(physicalDevice == VK_NULL_HANDLE) {
             throw std::runtime_error("failed to find a suitable GPU!");
         }
+    }
+
+    // almost every operation in Vulkan, anything from drawing to uploading textures,
+    // requires commands to be submitted to a queue.
+    // here are different types of queues that originate from different queue families and
+    // each family of queues allows only a subset of commands.
+
+    // check which queue families are supported by the device and
+    // which one of these supports the commands that we want to use
+    struct QueueFamilyIndices {
+        std::optional<uint32_t> graphicsFamily;
+
+        bool isComplete() {
+            return graphicsFamily.has_value();
+        }
+    };
+
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+        QueueFamilyIndices indices;
+        // Logic to find queue family indices to populate struct with
+
+        //  retrieves the list of queue families
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        int i = 0;
+        for (const auto& queueFamily : queueFamilies) {
+            // VK_QUEUE_GRAPHICS_BIT specifies that queues in this queue family support graphics operations
+            // let's find queues that support them.
+            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.graphicsFamily = i;
+            }
+
+            if (indices.isComplete()) {
+                break;
+            }
+
+            i++;
+        }
+
+        return indices;
     }
 
 // main functions at top level
