@@ -15,6 +15,7 @@ private:
     VkDebugUtilsMessengerEXT debugMessenger;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; //holds our graphics card
     VkDevice device; // logical device we will use to interface with the physical device
+    VkQueue graphicsQueue;
 public:
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
@@ -321,6 +322,7 @@ private:
             throw std::runtime_error("failed to create logical device!");
         }
 
+        vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
     }
 
 // main functions at top level
