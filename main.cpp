@@ -12,6 +12,7 @@ private:
     GLFWwindow* window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; //holds our graphics card
 public:
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
@@ -137,6 +138,21 @@ private:
         return extensions;
     }
 
+    // checks if a device is suitable for us in vulkan support
+    bool isDeviceSuitable(VkPhysicalDevice device) {
+        //Basic device properties like the name, type and supported Vulkan version
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+        //information on support for optional features
+        VkPhysicalDeviceFeatures deviceFeatures;
+        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+        // our suitability check
+        return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+               deviceFeatures.geometryShader;
+    }
+
+    // methods used to Initialize Vulkan in initVulkan()
     void createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
@@ -187,7 +203,6 @@ private:
         }
     }
 
-
     void setupDebugMessenger() {
         if (!enableValidationLayers) return;
 
@@ -196,6 +211,34 @@ private:
 
         if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
             throw std::runtime_error("failed to set up debug messenger!");
+        }
+    }
+
+
+    // After initializing the Vulkan library through a `VkInstance` we need to look for and select a
+    // graphics card in the system that supports the features we need. In fact we can select any number
+    // of graphics cards and use them simultaneously, but in this tutorial we'll stick to the first
+    // graphics card that suits our needs.
+    void pickPhysicalDevice() {
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+        if(deviceCount == 0) {
+            throw std::runtime_error("failed to find GPUs with Vulkan support!");
+        }
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+        for (const auto& device : devices) {
+            if(isDeviceSuitable(device)) {
+                physicalDevice = device;
+                break;
+            }
+        }
+
+        if(physicalDevice == VK_NULL_HANDLE) {
+            throw std::runtime_error("failed to find a suitable GPU!");
         }
     }
 
@@ -212,6 +255,7 @@ private:
     void initVulkan() {
         createInstance();
         setupDebugMessenger();
+        pickPhysicalDevice();
     }
 
     void mainLoop() {
