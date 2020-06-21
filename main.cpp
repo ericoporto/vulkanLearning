@@ -556,13 +556,13 @@ private:
     }
 
     void initVulkan() {
-        createInstance();
-        setupDebugMessenger();
-        createSurface();
-        pickPhysicalDevice();
-        createLogicalDevice();
-        createSwapChain();
-        createImageViews();
+        createInstance(); // setup
+        setupDebugMessenger(); // setup
+        createSurface(); // presentation
+        pickPhysicalDevice(); // setup
+        createLogicalDevice(); // setup
+        createSwapChain(); // presentation
+        createImageViews(); // presentation
     }
 
     void mainLoop() {
@@ -572,7 +572,7 @@ private:
     }
 
     void cleanup() {
-        for (auto imageView : swapChainImageViews) { 
+        for (auto imageView : swapChainImageViews) {
             vkDestroyImageView(device, imageView, nullptr);
         }
         vkDestroySwapchainKHR(device, swapChain, nullptr);
