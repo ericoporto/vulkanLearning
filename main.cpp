@@ -30,6 +30,8 @@ private:
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
     std::vector<VkFramebuffer> swapChainFramebuffers;
+    VkCommandPool commandPool;
+    std::vector<VkCommandBuffer> commandBuffers; // ommand buffers will be automatically freed when their command pool is destroyed, so we don't need an explicit cleanup.
 public:
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
@@ -793,6 +795,76 @@ private:
 
     }
 
+    // Command pools manage the memory that is used to store the buffers and command buffers are allocated from them
+    void createCommandPool() {
+        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+        poolInfo.flags = 0;
+
+        if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create command pool!");
+        }
+    }
+
+    void createCommandBuffers() {
+        // start allocating command buffers and recording drawing commands in them.
+        // one of the drawing commands involves binding the right VkFramebuffer
+        commandBuffers.resize(swapChainFramebuffers.size());
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = commandPool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
+
+        if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate command buffers!");
+        }
+
+        for (size_t i = 0; i < commandBuffers.size(); i++) {
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = 0; // no flag (Optional)
+            beginInfo.pInheritanceInfo = nullptr; // Optional
+
+            // begin recording command buffer
+            if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+                throw std::runtime_error("failed to begin recording command buffer!");
+            }
+
+            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = renderPass;
+            renderPassInfo.framebuffer = swapChainFramebuffers[i];
+            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.extent = swapChainExtent;
+            renderPassInfo.clearValueCount = 1;         //  define the clear values to use for VK_ATTACHMENT_LOAD_OP_CLEAR,
+            renderPassInfo.pClearValues = &clearColor;  // which we used as load operation for the color attachment
+            vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE); // returns void, no error handling until finish
+
+            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline); // bind the graphics pipeline
+
+            // Draw command parameters
+            // vertexCount: Even though we don't have a vertex buffer, we technically still have 3 vertices to draw.
+            // instanceCount: Used for instanced rendering, use 1 if you're not doing that.
+            // firstVertex: Used as an offset into the vertex buffer, defines the lowest value of gl_VertexIndex.
+            // firstInstance: Used as an offset for instanced rendering, defines the lowest value of gl_InstanceIndex.
+            vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+            vkCmdEndRenderPass(commandBuffers[i]); // ends the render pass
+
+            if(vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to record command buffer!");
+            }
+
+        }
+
+
+    }
+
     // main functions at top level
     void initWindow() {
         glfwInit();
@@ -814,6 +886,8 @@ private:
         createRenderPass(); // graphics pipeline
         createGraphicsPipeline(); // graphics pipeline
         createFramebuffers(); // drawing
+        createCommandPool(); // drawing
+        createCommandBuffers(); // drawing
     }
 
     void mainLoop() {
@@ -823,6 +897,7 @@ private:
     }
 
     void cleanup() {
+        vkDestroyCommandPool(device, commandPool, nullptr);
         for (auto framebuffer : swapChainFramebuffers) {
             vkDestroyFramebuffer(device, framebuffer, nullptr);
         }
