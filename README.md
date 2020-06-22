@@ -18,3 +18,6 @@ On Ubuntu 20.04 Focal Fossa, could only make the validation layers work after in
 
 On CLion, install the [GLSL Support](https://plugins.jetbrains.com/plugin/6993-glsl-support) plugin from the marketplace.
 This will make it easier to write *.frag and *.vert files (fragment and vertex shaders).
+
+To install [shaderc](https://github.com/google/shaderc) on Ubuntu, I downloaded the [binaries](https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_release.html)
+and placed the files (`bin`,`include`,`lib` and `share`) under `/usr/local/`.
