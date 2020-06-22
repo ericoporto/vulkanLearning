@@ -28,6 +28,7 @@ private:
     std::vector<VkImageView> swapChainImageViews;
     VkRenderPass renderPass;
     VkPipelineLayout pipelineLayout;
+    VkPipeline graphicsPipeline;
 public:
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
@@ -581,6 +582,40 @@ private:
         return shaderModule;
     }
 
+    void createRenderPass() {
+        // WATCH THIS ->> https://www.youtube.com/watch?v=x2SGVjlVGhE
+
+        // a single color buffer attachment represented by one of the images from the swap chain.
+        VkAttachmentDescription colorAttachment{};
+        colorAttachment.format = swapChainImageFormat;
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // needed to change if we are doing multisampling
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear the values to a constant at the start
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Rendered contents are stored in memory and can be read later
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // we don't care about previous layout of the image, we are going to clear it anyway!
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // images to be presented in the swap chain
+
+        VkAttachmentReference colorAttachmentRef{};
+        colorAttachmentRef.attachment = 0; //  Our array consists of a single VkAttachmentDescription, so its index is 0
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // Subpasses are subsequent rendering operations that depend on the contents of framebuffers in previous passes
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // explicit the subpass is for graphics
+        subpass.colorAttachmentCount = 1; // location of the fragmentShader outColor
+        subpass.pColorAttachments = &colorAttachmentRef;
+
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = 1;
+        renderPassInfo.pAttachments = &colorAttachment;
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+
+        if(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create render pass!");
+        }
+    }
+
     void createGraphicsPipeline() {
         auto vertShaderCode = readFile("shaders/vert.spv");
         auto fragShaderCode = readFile("shaders/frag.spv");
@@ -706,43 +741,33 @@ private:
             throw std::runtime_error("failed to create pipeline layout!");
         }
 
+        VkGraphicsPipelineCreateInfo pipelineInfo{};
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipelineInfo.stageCount = 2; // shader stuff
+        pipelineInfo.pStages = shaderStages; // shader stuff
+        pipelineInfo.pVertexInputState = &vertexInputInfo;
+        pipelineInfo.pInputAssemblyState = &inputAssembly; // fixed-function stage
+        pipelineInfo.pViewportState = &viewportState; // fixed-function stage
+        pipelineInfo.pRasterizationState = &rasterizer; // fixed-function stage
+        pipelineInfo.pMultisampleState = &multisampling; // fixed-function stage
+        pipelineInfo.pDepthStencilState = nullptr; // fixed-function stage
+        pipelineInfo.pColorBlendState = &colorBlending; // fixed-function stage
+        pipelineInfo.pDynamicState = nullptr;  // fixed-function stage
+        pipelineInfo.layout = pipelineLayout;
+        pipelineInfo.renderPass = renderPass;
+        pipelineInfo.subpass = 0;
+        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // we are not deriving from an existing pipeline (Optional)
+        pipelineInfo.basePipelineIndex = -1; // we are not deriving from an existing pipeline (Optional)
+
+        if(vkCreateGraphicsPipelines(
+                device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create graphics pipeline!");
+        }
+
         vkDestroyShaderModule(device, fragShaderModule, nullptr);
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
 
-    void createRenderPass() {
-        // WATCH THIS ->> https://www.youtube.com/watch?v=x2SGVjlVGhE
-
-        // a single color buffer attachment represented by one of the images from the swap chain.
-        VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = swapChainImageFormat;
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // needed to change if we are doing multisampling
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear the values to a constant at the start
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Rendered contents are stored in memory and can be read later
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // we don't care about previous layout of the image, we are going to clear it anyway!
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // images to be presented in the swap chain
-
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = 0; //  Our array consists of a single VkAttachmentDescription, so its index is 0
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        // Subpasses are subsequent rendering operations that depend on the contents of framebuffers in previous passes
-        VkSubpassDescription subpass{};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // explicit the subpass is for graphics
-        subpass.colorAttachmentCount = 1; // location of the fragmentShader outColor
-        subpass.pColorAttachments = &colorAttachmentRef;
-
-        VkRenderPassCreateInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
-        renderPassInfo.subpassCount = 1;
-        renderPassInfo.pSubpasses = &subpass;
-
-        if(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create render pass!");
-        }
-    }
 
     // main functions at top level
     void initWindow() {
@@ -762,7 +787,7 @@ private:
         createLogicalDevice(); // setup
         createSwapChain(); // presentation
         createImageViews(); // presentation
-        createRenderPass();
+        createRenderPass(); // graphics pipeline
         createGraphicsPipeline(); // graphics pipeline
     }
 
@@ -773,6 +798,7 @@ private:
     }
 
     void cleanup() {
+        vkDestroyPipeline(device, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
         vkDestroyRenderPass(device, renderPass, nullptr);
         for (auto imageView : swapChainImageViews) {
