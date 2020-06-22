@@ -26,6 +26,7 @@ private:
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
     std::vector<VkImageView> swapChainImageViews;
+    VkRenderPass renderPass;
     VkPipelineLayout pipelineLayout;
 public:
     const uint32_t WIDTH = 800;
@@ -709,6 +710,40 @@ private:
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
 
+    void createRenderPass() {
+        // WATCH THIS ->> https://www.youtube.com/watch?v=x2SGVjlVGhE
+
+        // a single color buffer attachment represented by one of the images from the swap chain.
+        VkAttachmentDescription colorAttachment{};
+        colorAttachment.format = swapChainImageFormat;
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // needed to change if we are doing multisampling
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear the values to a constant at the start
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Rendered contents are stored in memory and can be read later
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // we don't care about previous layout of the image, we are going to clear it anyway!
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // images to be presented in the swap chain
+
+        VkAttachmentReference colorAttachmentRef{};
+        colorAttachmentRef.attachment = 0; //  Our array consists of a single VkAttachmentDescription, so its index is 0
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // Subpasses are subsequent rendering operations that depend on the contents of framebuffers in previous passes
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // explicit the subpass is for graphics
+        subpass.colorAttachmentCount = 1; // location of the fragmentShader outColor
+        subpass.pColorAttachments = &colorAttachmentRef;
+
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = 1;
+        renderPassInfo.pAttachments = &colorAttachment;
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+
+        if(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create render pass!");
+        }
+    }
+
     // main functions at top level
     void initWindow() {
         glfwInit();
@@ -727,6 +762,7 @@ private:
         createLogicalDevice(); // setup
         createSwapChain(); // presentation
         createImageViews(); // presentation
+        createRenderPass();
         createGraphicsPipeline(); // graphics pipeline
     }
 
@@ -738,6 +774,7 @@ private:
 
     void cleanup() {
         vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+        vkDestroyRenderPass(device, renderPass, nullptr);
         for (auto imageView : swapChainImageViews) {
             vkDestroyImageView(device, imageView, nullptr);
         }
