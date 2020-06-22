@@ -1,6 +1,8 @@
 # vulkanLearning
 personal repository for learning vulkan, non reusable stuff, just following [vulkan-tutorial.com](https://vulkan-tutorial.com/).
 
+![](images/spock.gif)
+
 This repository is set up for CLion 2020.1.2 on Ubuntu 20.04
 
 - You need to download the latest Vulkan SDK from: [vulkan.lunarg.com/sdk/home#linux](https://vulkan.lunarg.com/sdk/home#linux)
