@@ -3,6 +3,8 @@ personal repository for learning vulkan, non reusable stuff, just following [vul
 
 ![](images/spock.gif)
 
+Note: [the tutorial follows the Vulkan 1.0 spec mostly](https://www.khronos.org/registry/vulkan/specs/1.0/html/)
+
 This repository is set up for CLion 2020.1.2 on Ubuntu 20.04
 
 - You need to download the latest Vulkan SDK from: [vulkan.lunarg.com/sdk/home#linux](https://vulkan.lunarg.com/sdk/home#linux)
