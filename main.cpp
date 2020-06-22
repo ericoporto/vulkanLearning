@@ -545,7 +545,11 @@ private:
 
     }
 
-// main functions at top level
+    void createGraphicsPipeline() {
+
+    }
+
+    // main functions at top level
     void initWindow() {
         glfwInit();
 
@@ -563,6 +567,7 @@ private:
         createLogicalDevice(); // setup
         createSwapChain(); // presentation
         createImageViews(); // presentation
+        createGraphicsPipeline(); // graphics pipeline
     }
 
     void mainLoop() {
