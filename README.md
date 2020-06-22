@@ -15,3 +15,6 @@ point the `x86_64` dir inside the SDK.
 On Ubuntu 20.04 Focal Fossa, could only make the validation layers work after installing at system level with:
 
     sudo apt install vulkan-validationlayers-dev
+
+On CLion, install the [GLSL Support](https://plugins.jetbrains.com/plugin/6993-glsl-support) plugin from the marketplace.
+This will make it easier to write *.frag and *.vert files (fragment and vertex shaders).
