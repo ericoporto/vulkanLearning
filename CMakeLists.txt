@@ -11,6 +11,7 @@ add_subdirectory(lib/glfw-3.3.2)
 SET(GLM_TEST_ENABLE OFF CACHE BOOL "GLM Build unit tests")
 add_subdirectory(lib/glm-0.9.9.6      EXCLUDE_FROM_ALL)
 
+# more info on file operations https://cmake.org/cmake/help/latest/command/file.html
 FILE(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/shaders")
 FILE(COPY shaders/frag.spv DESTINATION "${CMAKE_BINARY_DIR}/shaders/")
 FILE(COPY shaders/vert.spv DESTINATION "${CMAKE_BINARY_DIR}/shaders/")
