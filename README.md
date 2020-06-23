@@ -10,6 +10,10 @@ This repository is set up for CLion 2020.1.2 on Ubuntu 20.04
 On Ubuntu 20.04 Focal Fossa, could only make the validation layers work after installing at system level. 
 After a lot of pain I gave up on using the LunarG SDK, instead I am getting everything from the apt repository too. 
 
+GLFW and GLM are in the repo itself because I imagine if I were to develop a cross-platform application I would add them
+in the project to save the headache of dealing with multiple different package managers in different systems for things 
+not vulkan. 
+
 Package `vulkan-tools` is needed for command-line utilities, most importantly vulkaninfo and vkcube. Useful to confirm my machine is Vulkan-capable.
 The package `libvulkan-dev` installs the Vulkan loader.
 
