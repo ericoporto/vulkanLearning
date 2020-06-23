@@ -18,7 +18,7 @@ GLFW and GLM are in the repo itself, because I imagine if I were to develop a cr
 in the project to save the headache of dealing with multiple different package managers in different systems for things 
 not vulkan. 
 
-The package `vulkan-tools` is needed for command-line utilities, most importantly vulkaninfo and vkcube. Useful to confirm my machine is Vulkan-capable.
+The package `vulkan-tools` is needed for command-line utilities, most importantly vulkaninfo and vkcube, which are useful to confirm my machine is Vulkan-capable.
 The package `libvulkan-dev` installs the Vulkan loader.
 
 ***WARNING:*** *never reinstall* `libvulkan1`, a ton of things depends on it and when I tried it blew up my system, so if 
