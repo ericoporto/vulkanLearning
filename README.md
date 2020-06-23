@@ -7,24 +7,26 @@ Note: [the tutorial follows the Vulkan 1.0 spec mostly](https://www.khronos.org/
 
 This repository is set up for CLion 2020.1.2 on Ubuntu 20.04
 
-- You need to download the latest Vulkan SDK from: [vulkan.lunarg.com/sdk/home#linux](https://vulkan.lunarg.com/sdk/home#linux)
-  - at the time of this writing it's [vulkansdk-linux-x86_64-1.2.141.2.tar.gz](https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.2.141.2/linux/vulkansdk-linux-x86_64-1.2.141.2.tar.gz)
-  - I used the directory `external` in this project to place the SDK. The SDK is huge, which is why I have not commited 
-  it.
-- Then go into "Settings -> [Build,Execution, Deployment] CMake -> Environment" and set the `VULKAN_SDK` environment 
-variable there. 
-- If you are on on the same SDK I am using that environment variable may be already correctly configured, it should 
-point the `x86_64` dir inside the SDK.
+On Ubuntu 20.04 Focal Fossa, could only make the validation layers work after installing at system level. 
+After a lot of pain I gave up on using the LunarG SDK, instead I am getting everything from the apt repository too. 
 
-On Ubuntu 20.04 Focal Fossa, could only make the validation layers work after installing at system level with:
+Package `vulkan-tools` is needed for command-line utilities, most importantly vulkaninfo and vkcube. Useful to confirm my machine is Vulkan-capable.
+The package `libvulkan-dev` installs the Vulkan loader.
 
-    sudo apt install vulkan-validationlayers-dev
+    sudo apt install vulkan-validationlayers-dev libvulkan-dev vulkan-tools
+    
+***WARNING:*** *never reinstall* `libvulkan1`, a ton of things depends on it and when I tried it blew up my system, so if 
+the above doesn't work, be patient and look for help.    
+
+---
 
 On CLion, install the [GLSL Support](https://plugins.jetbrains.com/plugin/6993-glsl-support) plugin from the marketplace.
 This will make it easier to write *.frag and *.vert files (fragment and vertex shaders).
 
 To install [shaderc](https://github.com/google/shaderc) on Ubuntu, I downloaded the [binaries](https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_release.html)
-and picked only the `glslc` binary and placed it under `/usr/local/`.
+and picked only the `glslc` binary and placed it under `/usr/local/`. You can get the  [**`glslc ↓`**](https://drive.google.com/uc?export=download&confirm=c8GS&id=1koFW-DJjkRWG5IMBVgz7rsDUaZRIWVyP)  I used too.
 
 ![](images/the_triangle.png)
+
+*the triangle*
 
