@@ -11,7 +11,7 @@ This repository is set up for CLion 2020.1.2 on Ubuntu 20.04. Install following 
     
 ## Why these packages
 
-On Ubuntu 20.04 Focal Fossa, I could only make the validation layers work after installing at system level. 
+On Ubuntu 20.04 Focal Fossa, I could only make the validation layers work after installing them at system level. 
 After a lot of pain I gave up on using the LunarG SDK, instead I am getting everything from the apt repository too. 
 
 GLFW and GLM are in the repo itself, because I imagine if I were to develop a cross-platform application, I would add them
