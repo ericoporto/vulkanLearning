@@ -31,10 +31,10 @@ the above doesn't work, be patient and look for help.
 On CLion, install the [GLSL Support](https://plugins.jetbrains.com/plugin/6993-glsl-support) plugin from the marketplace.
 This will make it easier to write *.frag and *.vert files (fragment and vertex shaders).
 
-Don't install [shaderc](https://github.com/google/shaderc). On Ubuntu I instead downloaded the [binaries](https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_release.html)
-and picked only the `glslc` binary and placed it under `/usr/local/`. You can get the  [**`glslc ↓`**](https://drive.google.com/uc?export=download&confirm=c8GS&id=1koFW-DJjkRWG5IMBVgz7rsDUaZRIWVyP)  I used too.
-
 We use `glslc` int the `shaders/compile.sh` script to build the spirv shaders.
+
+Don't install [shaderc](https://github.com/google/shaderc), it packages too much unneeded stuff. On Ubuntu I instead downloaded the [binaries](https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_release.html)
+and picked only the `glslc` binary and placed it under `/usr/local/`. You can get the  [**`glslc ↓`**](https://drive.google.com/uc?export=download&confirm=c8GS&id=1koFW-DJjkRWG5IMBVgz7rsDUaZRIWVyP)  I used too.
 
 ![](images/the_triangle.png)
 
