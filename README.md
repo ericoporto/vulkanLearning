@@ -5,7 +5,11 @@ personal repository for learning vulkan, non reusable stuff, just following [vul
 
 Note: [the tutorial follows the Vulkan 1.0 spec mostly](https://www.khronos.org/registry/vulkan/specs/1.0/html/)
 
-This repository is set up for CLion 2020.1.2 on Ubuntu 20.04
+This repository is set up for CLion 2020.1.2 on Ubuntu 20.04. Install following dependencies:
+
+    sudo apt install vulkan-validationlayers-dev libvulkan-dev vulkan-tools
+    
+## Why these packages
 
 On Ubuntu 20.04 Focal Fossa, could only make the validation layers work after installing at system level. 
 After a lot of pain I gave up on using the LunarG SDK, instead I am getting everything from the apt repository too. 
@@ -17,12 +21,12 @@ not vulkan.
 Package `vulkan-tools` is needed for command-line utilities, most importantly vulkaninfo and vkcube. Useful to confirm my machine is Vulkan-capable.
 The package `libvulkan-dev` installs the Vulkan loader.
 
-    sudo apt install vulkan-validationlayers-dev libvulkan-dev vulkan-tools
-    
 ***WARNING:*** *never reinstall* `libvulkan1`, a ton of things depends on it and when I tried it blew up my system, so if 
 the above doesn't work, be patient and look for help.    
 
 ---
+
+## Running and developing
 
 On CLion, install the [GLSL Support](https://plugins.jetbrains.com/plugin/6993-glsl-support) plugin from the marketplace.
 This will make it easier to write *.frag and *.vert files (fragment and vertex shaders).
