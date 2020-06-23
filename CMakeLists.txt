@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(vulkanLearning)
 
-# Remember to set the VULKAN_SDK env variable
-#VULKAN_SDK=/home/username/git/vulkanLearning/external/vulkansdk-linux-x86_64/1.2.141.2/x86_64
-
 set(CMAKE_CXX_STANDARD 17)
 find_package(Vulkan REQUIRED)
 
