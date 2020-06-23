@@ -24,4 +24,7 @@ On CLion, install the [GLSL Support](https://plugins.jetbrains.com/plugin/6993-g
 This will make it easier to write *.frag and *.vert files (fragment and vertex shaders).
 
 To install [shaderc](https://github.com/google/shaderc) on Ubuntu, I downloaded the [binaries](https://storage.googleapis.com/shaderc/badges/build_link_linux_clang_release.html)
-and placed the files (`bin`,`include`,`lib` and `share`) under `/usr/local/`.
+and picked only the `glslc` binary and placed it under `/usr/local/`.
+
+![](images/the_triangle.png)
+
