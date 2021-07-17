@@ -41,3 +41,7 @@ and picked only the `glslc` binary and placed it under `/usr/local/`. You can ge
 *the triangle*
 
 It's very easy to write wrong valid shader code in glsl, so if things don't work when you are following the tutorial, triple check your shader code. It took me two days to find out I switched an `in` for an `out` in my code, that silently broke everything.
+
+## Additional Help
+
+- https://www.youtube.com/watch?v=x2SGVjlVGhE
